@@ -1,0 +1,535 @@
+<?php
+
+/**
+ * Implementation of hook_block_info().
+ */
+function proposalform_block_info() {
+  $blocks['proposalform-proposal'] = array(
+    'info' => t('Proposalform new proposal'),
+  );
+  return $blocks;
+}
+ 
+/**
+ * Implementation of hook_block_view().
+ */
+function proposalform_block_view($delta='') {
+  $block = new stdClass();
+  switch ($delta) {
+    case 'proposalform-proposal':
+      $block->subject = t('Add new proposal');
+      $block->content = theme('proposalform_proposal_theme_form', array('form' => drupal_get_form('proposalform_proposal_form')));
+      break;
+  }
+  return $block;
+}
+
+function proposalform_theme() {
+  return array(
+    'proposalform_proposal_theme_form' => array(
+      'variables' => array('form' => NULL),
+      'template' => 'proposalform-proposal',
+    )
+  );
+}
+
+function proposalform_proposal_form($node, &$form_state) {
+  global $user;
+
+  $form = array();
+  $proposal = array(
+    '#type' => 'container',
+  );
+  
+  $proposal_header = array(
+    '#type' => 'container',
+  );
+
+  $proposal_header['proposalform_proposal_title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title').':',
+    '#required' => TRUE,
+    '#prefix' => '<div class="title">',
+    '#suffix' => '</div>',
+  );
+
+  $proposal_header['proposalform_proposal_dsv_person_in_charge'] = array(
+    '#title' => t('Author').':',
+    '#type' => 'textfield',
+    '#autocomplete_path' => 'user/autocomplete',
+    '#required' => TRUE,
+  );
+
+  $proposal_header['proposalform_proposal_deadline'] = array(
+    '#title' => t('Deadline').':',
+    '#type' => 'date_popup',
+    '#date_format' => 'Y-m-d',
+  );
+
+  $proposal_header['proposalform_proposal_duration'] = array(
+    '#title' => t('Duration').':',
+    '#type' => 'textfield',
+    '#required' => TRUE,
+  );
+ 
+  $proposal['proposal_header'] = $proposal_header;
+
+  $content = array(
+    '#type' => 'container'
+  );
+
+  $first_row = array(
+    '#type' => 'container'
+  );
+
+  $first_row['proposalform_proposal_is_dsv_coordinating'] = array(
+    '#title' => t('Is DSV coordinating').':',
+    '#type' => 'radios',
+    '#default_value' => 0,
+    '#options'  => array( 0 => 'No', 1 => 'Yes'),
+    '#required' => TRUE,
+  );
+
+  $first_row['proposalform_proposal_other_coordinator'] = array(
+    '#title' => t('Other coordinator').':',
+    '#type'  => 'textfield'
+  );
+
+  $first_row['proposalform_proposal_program_call_target'] = array(
+    '#title' => t('Program/Call/Target').':',
+    '#type'  => 'textfield'
+  );
+
+  $content['first_row'] = $first_row;
+ 
+  $second_row = array(
+    '#type' => 'container'
+  );
+
+  $second_row['proposalform_proposal_co_financing_needed'] = array(
+    '#title' => t('Co-financing needed').':',
+    '#type'  => 'checkbox',
+    '#title_display' => 'before',
+  );
+
+  $second_row['proposalform_proposal_co_financing_covered_by'] = array(
+    '#title' => t('Co-financing covered by').':',
+    '#type'  => 'textfield'
+  );
+
+  $second_row['proposalform_proposal_percent_oh_costs_covered'] = array(
+    '#title' => t('Percent OH costs covered').':',
+    '#type'  => 'textfield'
+  );
+
+  $content['second_row'] = $second_row;
+
+  $third_row = array(
+    '#type' => 'container'
+  );
+
+  $third_row['proposalform_proposal_funding_organization'] = array(
+    '#title' => t('Funding organization').':',
+    '#type'  => 'textfield',
+    '#autocomplete_path' => 'taxonomy/autocomplete/field_funding_organization'
+  );
+
+  $third_row['proposalform_proposal_total_budget_amount_for_co'] = array(
+    '#title' => t('Budget for complete project').':',
+    '#type'  => 'textfield'
+  );
+
+  $third_row['proposalform_proposal_total_budget_amount_for_ds'] = array(
+    '#title' => t('Budget for DSV').':',
+    '#type'  => 'textfield'
+  );
+
+  $content['third_row'] = $third_row;
+
+  $right_section = array(
+    '#type' => 'container'
+  );
+
+  $right_section['proposalform_proposal_ok_from_dsv_economy'] = array(
+    '#title' => t('OK from DSV economy').':',
+    '#type'  => 'checkbox',
+    '#title_display' => 'before',
+  );
+
+  $right_section['proposalform_proposal_forskningsservice_informed'] = array(
+    '#title' => t('Forskningsservice informed').':',
+    '#type'  => 'checkbox',
+    '#title_display' => 'before',
+  );
+
+  $right_section['proposalform_proposal_ok_from_uno'] = array(
+    '#title' => t('Ok from Uno').':',
+    '#type'  => 'checkbox',
+    '#title_display' => 'before',
+  );
+
+  // If user isn't admin or Vice head of Institution
+  if (!array_key_exists('3', $user->roles) && !array_key_exists('5', $user->roles)) {
+    $right_section['proposalform_proposal_ok_from_uno']['#attributes'] = array(
+      'disabled' => 'true',
+    );
+  }
+
+  $right_section['proposalform_proposal_sent_to_birgitta_o'] = array(
+    '#title' => t('Sent to Birgitta').':',
+    '#type'  => 'checkbox',
+    '#title_display' => 'before',
+  );
+
+  $right_section['proposalform_proposal_currency'] = array(
+    '#title' => t('Currency').':',
+    '#type' => 'radios',
+    '#default_value' => 'kr',
+    '#options' => array( 'kr' => 'kr', '$' => '$' , '€' => '€'),
+    '#required' => TRUE
+  );
+
+  $right_section['proposalform_proposal_edit_node'] = array(
+    '#type'  => 'hidden'
+  );
+
+  $right_section['proposalform_proposal_cancel'] = array(
+    '#type' => 'button',
+    '#attributes' => array(
+      'id' => 'edit-proposalform-proposal-cancel'
+    ),
+    '#value' => t('Cancel'),
+  );
+
+  $right_section['proposalform_proposal_submit'] = array(
+    '#type'  => 'submit',
+    '#value' => t('Save'),
+  );
+  $content['right_section'] = $right_section;
+
+  $proposal['content'] = $content;
+
+  $proposal['box'] = array(
+    '#type'       => 'container',
+    '#attributes' => array(
+      'style'     => 'clear: both'
+    )
+  );
+
+  $form['proposal'] = $proposal;
+
+  $form['box'] = array(
+    '#type'       => 'container',
+    '#attributes' => array(
+      'style' => 'clear: both'
+    )
+  );
+
+  return $form;
+}
+
+// Helper method that formats data input in a budget field to a correct integer value
+function format_budget($budget) {
+  $formatted = strtolower($budget);
+  $formatted = str_replace(' ', '', $formatted);
+  $formatted = str_replace('k', '000', $formatted);
+  return intval($formatted);
+}
+
+function update_node($nid, $form, &$form_state) {
+  global $user;
+
+  // Load node to edit
+  $node = node_load($nid);
+
+  // We want to make sure that only an authorized user can update this node
+  if ($node->uid != $user->uid) {
+    // If we get here, only an admin or "Vice head of Institution"/"Institution secretary" role can save the user!
+    if (!array_key_exists('3', $user->roles)
+      && !array_key_exists('5', $user->roles)
+      && !array_key_exists('6', $user->roles)) {
+      // UNAUTHORIZED USER!! DIIEEE!!
+      return false;
+    }
+  }
+
+  $vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE machine_name = 'funding_organizations'")->fetchField();
+
+  $query = new EntityFieldQuery;
+  $result = $query
+    ->entityCondition('entity_type', 'taxonomy_term')
+    ->propertyCondition('name', $form['proposal']['content']['third_row']['proposalform_proposal_funding_organization']['#value'])
+    ->propertyCondition('vid', $vid)
+    ->execute();
+
+  $term = NULL;
+
+  if (empty($result)) {
+    // Need to create a new Funding Organisation
+    $tax = new stdClass();
+    $tax->vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE machine_name = 'funding_organizations'")->fetchField();
+    $tax->name = $form['proposal']['content']['third_row']['proposalform_proposal_funding_organization']['#value'];
+    $term = taxonomy_term_save($tax);
+
+    $query = new EntityFieldQuery;
+    $result = $query
+      ->entityCondition('entity_type', 'taxonomy_term')
+      ->propertyCondition('name', $form['proposal']['content']['third_row']['proposalform_proposal_funding_organization']['#value'])
+      ->propertyCondition('vid', $vid)
+      ->execute();
+
+    // Add new funding org to node
+    $node->field_funding_organization[LANGUAGE_NONE][0]['tid'] = current($result['taxonomy_term'])->tid;
+
+  } else {
+    if ($node->field_funding_organization[LANGUAGE_NONE][0]['tid'] != 
+      current($result['taxonomy_term'])->tid) {
+      // Need to update the node's funding organization ID
+      $node->field_funding_organization[LANGUAGE_NONE][0]['tid'] = current($result['taxonomy_term'])->tid;
+    } else {
+      // No need to update the Funding Organization...
+    }
+  }
+  
+  // Try to fetch specified user's ID
+  $username = $form['proposal']['proposal_header']['proposalform_proposal_dsv_person_in_charge']['#value'];
+  $author = user_load_by_name($username);
+
+  // Handle the case of a new user (that doesn't yet exist)
+  if ($author == false) {
+    // This will generate a random password
+    $password = user_password(8);
+
+    // Set up the user fields
+    $fields = array(
+      'name' => $username,
+      'mail' => $username.'@fakeuser.com',
+      'pass' => $password,
+      'status' => 1,
+      'init' => $username.'@fakeuser.com',
+      'roles' => array(
+        DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+      ),
+    );
+
+    // The first parameter is left blank so a new user is created
+    $author = user_save('', $fields);
+  }
+
+  $deadline = $form['proposal']['proposal_header']['proposalform_proposal_deadline']['#value'];
+
+  if ($deadline['date'] != '' || $deadline['date'] != null) {
+    $deadline = $deadline['date'].' 00:00:00';
+  } else {
+    $deadline = null;
+  }
+
+  // Update node values!
+  $node->title = $form['proposal']['proposal_header']['proposalform_proposal_title']['#value'];
+  $node->field_deadline[LANGUAGE_NONE][0]['value'] = $deadline;
+  $node->field_dsv_person_in_charge[LANGUAGE_NONE][0]['uid'] = $author->uid;
+  $node->field_duration[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['proposal_header']['proposalform_proposal_duration']['#value'];
+
+  $node->field_is_dsv_coordinating[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['first_row']['proposalform_proposal_is_dsv_coordinating']['#value'];
+
+  $node->field_other_coordinator[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['first_row']['proposalform_proposal_other_coordinator']['#value'];
+
+  $node->field_program_call_target[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['first_row']['proposalform_proposal_program_call_target']['#value'];
+
+  $node->field_co_financing_needed[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['second_row']['proposalform_proposal_co_financing_needed']['#value'];
+
+  $node->field_co_financing_covered_by[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['second_row']['proposalform_proposal_co_financing_covered_by']['#value'];
+
+  // Be prepared to handle bad values!
+  $field = $form['proposal']['content']['second_row']['proposalform_proposal_percent_oh_costs_covered']['#value'];
+  if ($field == '') {
+    $field = 0;
+  }
+  $node->field_percent_oh_costs_covered[LANGUAGE_NONE][0]['value'] = intval($field);
+
+  // Watch out for bad input in budgets!
+  $budget = $form['proposal']['content']['third_row']['proposalform_proposal_total_budget_amount_for_co']['#value'];
+  $node->field_total_budget_amount_for_co[LANGUAGE_NONE][0]['value'] = format_budget($budget);
+
+  $budget = $form['proposal']['content']['third_row']['proposalform_proposal_total_budget_amount_for_ds']['#value'];
+  $node->field_total_budget_amount_for_ds[LANGUAGE_NONE][0]['value'] = format_budget($budget);
+
+  $node->field_ok_from_dsv_economy[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['right_section']['proposalform_proposal_ok_from_dsv_economy']['#value'];
+
+  $node->field_forskningsservice_informed[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['right_section']['proposalform_proposal_forskningsservice_informed']['#value'];
+
+  // Only the "Vice head of institution" or admin may change this!
+  if (array_key_exists('3', $user->roles) || array_key_exists('5', $user->roles)) {
+    $node->field_ok_from_uno[LANGUAGE_NONE][0]['value'] =
+      $form['proposal']['content']['right_section']['proposalform_proposal_ok_from_uno']['#value'];
+  }
+
+  $node->field_sent_to_birgitta_o[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['right_section']['proposalform_proposal_sent_to_birgitta_o']['#value'];
+
+  $node->field_currency[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['right_section']['proposalform_proposal_currency']['#value'];
+
+  node_save($node);
+
+  return true;
+}
+
+function create_node($form, &$form_state) {
+  global $user;
+
+  $vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE machine_name = 'funding_organizations'")->fetchField();
+
+  $query = new EntityFieldQuery;
+  $result = $query
+    ->entityCondition('entity_type', 'taxonomy_term')
+    ->propertyCondition('name', $form['proposal']['content']['third_row']['proposalform_proposal_funding_organization']['#value'])
+    ->propertyCondition('vid', $vid)
+    ->execute();
+
+  $term = NULL;
+
+  if (empty($result)) {
+    $tax = new stdClass();
+    $tax->vid = db_query("SELECT vid FROM {taxonomy_vocabulary} WHERE machine_name = 'funding_organizations'")->fetchField();
+    $tax->name = $form['proposal']['content']['third_row']['proposalform_proposal_funding_organization']['#value'];
+    $term = taxonomy_term_save($tax);
+
+    $query = new EntityFieldQuery;
+    $result = $query
+      ->entityCondition('entity_type', 'taxonomy_term')
+      ->propertyCondition('name', $form['proposal']['content']['third_row']['proposalform_proposal_funding_organization']['#value'])
+      ->propertyCondition('vid', $vid)
+      ->execute();
+  }
+
+  $term = NULL;
+  $term = taxonomy_term_load(current($result['taxonomy_term'])->tid);
+
+  $newNode = new stdClass();
+  $newNode->type = 'project_proposal';
+  $newNode->uid = $user->uid;
+  $newNode->created = strtotime("now");
+  $newNode->changed = strtotime("now");
+  $newNode->status = 1;
+  $newNode->comment = 1;
+  $newNode->promote = 0;
+  $newNode->moderate = 0;
+  $newNode->sticky = 0;
+  $newNode->language = 'und';
+  $newNode->title = $form['proposal']['proposal_header']['proposalform_proposal_title']['#value'];
+
+  node_object_prepare($newNode);
+
+  // Try to fetch specified user's ID
+  $username = $form['proposal']['proposal_header']['proposalform_proposal_dsv_person_in_charge']['#value'];
+  $author = user_load_by_name($username);
+
+  // Handle the case of a newly defined user (that doesn't really exist)
+  if ($author == FALSE) {
+    // Create new user and use that as an author...
+
+    // This will generate a random password
+    $password = user_password(8);
+ 
+    // Set up the user fields
+    $fields = array(
+      'name' => $username,
+      'mail' => $username.'@fakeuser.com',
+      'pass' => $password,
+      'status' => 1,
+      'init' => $username.'@fakeuser.com',
+      'roles' => array(
+        DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+      ),
+    );
+ 
+    // The first parameter is left blank so a new user is created
+    $author = user_save('', $fields);
+  }
+
+  $deadline = $form['proposal']['proposal_header']['proposalform_proposal_deadline']['#value'];
+
+  if ($deadline['date'] != '' || $deadline['date'] != null) {
+    $deadline = $deadline['date'].' 00:00:00';
+  } else {
+    $deadline = null;
+  }
+
+  $newNode->field_deadline[LANGUAGE_NONE][0]['value'] = $deadline;
+  $newNode->field_dsv_person_in_charge[LANGUAGE_NONE][0]['uid'] = $author->uid;
+  $newNode->field_duration[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['proposal_header']['proposalform_proposal_duration']['#value'];
+
+  $newNode->field_is_dsv_coordinating[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['first_row']['proposalform_proposal_is_dsv_coordinating']['#value'];
+
+  $newNode->field_other_coordinator[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['first_row']['proposalform_proposal_other_coordinator']['#value'];
+
+  $newNode->field_program_call_target[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['first_row']['proposalform_proposal_program_call_target']['#value'];
+
+  $newNode->field_co_financing_needed[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['second_row']['proposalform_proposal_co_financing_needed']['#value'];
+
+  $newNode->field_co_financing_covered_by[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['second_row']['proposalform_proposal_co_financing_covered_by']['#value'];
+
+  // Be prepared to handle bad values!
+  $field = $form['proposal']['content']['second_row']['proposalform_proposal_percent_oh_costs_covered']['#value'];
+  if ($field == '') {
+    $field = 0;
+  }
+  $newNode->field_percent_oh_costs_covered[LANGUAGE_NONE][0]['value'] = intval($field);
+
+  $newNode->field_funding_organization[LANGUAGE_NONE][$term->tid] = (array)$term;
+
+  // Handle budgets (might be bad)
+  $budget = $form['proposal']['content']['third_row']['proposalform_proposal_total_budget_amount_for_co']['#value'];
+  $newNode->field_total_budget_amount_for_co[LANGUAGE_NONE][0]['value'] = format_budget($budget);
+
+  $budget = $form['proposal']['content']['third_row']['proposalform_proposal_total_budget_amount_for_ds']['#value'];
+  $newNode->field_total_budget_amount_for_ds[LANGUAGE_NONE][0]['value'] = format_budget($budget);
+
+  $newNode->field_ok_from_dsv_economy[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['right_section']['proposalform_proposal_ok_from_dsv_economy']['#value'];
+
+  $newNode->field_forskningsservice_informed[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['right_section']['proposalform_proposal_forskningsservice_informed']['#value'];
+
+  $newNode->field_ok_from_uno[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['right_section']['proposalform_proposal_ok_from_uno']['#value'];
+
+  $newNode->field_sent_to_birgitta_o[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['right_section']['proposalform_proposal_sent_to_birgitta_o']['#value'];
+
+  $newNode->field_currency[LANGUAGE_NONE][0]['value'] =
+    $form['proposal']['content']['right_section']['proposalform_proposal_currency']['#value'];
+
+  $newNode = node_submit($newNode);
+  node_save($newNode);
+}
+
+function proposalform_proposal_form_submit($form, &$form_state) {
+  $nodeID = $form['proposal']['content']['right_section']['proposalform_proposal_edit_node']['#value'];
+  if ($nodeID != null) {
+    update_node($nodeID, $form, $form_state) ? drupal_set_message(t('The proposal was updated')) : drupal_set_message(t('User does not have permission to update node'));
+
+  } else {
+    create_node($form, $form_state);
+    drupal_set_message(t('Your proposal was saved'));
+  }
+
+  drupal_goto('proposals');
+}
+
+?>

@@ -1,0 +1,4 @@
+name = Proposalform
+description = ...
+core = 7.x
+files[] = contenttypetest.module;
