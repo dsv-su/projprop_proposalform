@@ -190,7 +190,10 @@ function proposalform_proposal_form($node, &$form_state) {
   );
 
   $right_section['proposalform_proposal_edit_node'] = array(
-    '#type'  => 'hidden'
+    '#type'  => 'hidden',
+    '#attributes' => array(
+      'id' => 'edit-proposalform-proposal-edit-node'
+    )
   );
 
   $right_section['proposalform_proposal_cancel'] = array(
